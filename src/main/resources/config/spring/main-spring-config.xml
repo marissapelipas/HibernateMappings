@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- Autowire declared beans in spring xml config 
+	<context:annotation-config/>
+	-->
+	
+	<!-- Process Annotation @Autowire + @Component(subclasses: @Component, @Service, @Repository, @Controller, @Endpoint, etc) -->
+	<context:component-scan base-package="pel.samples" />
+
+	<!-- Classic bean-style dataSource config (vs jdbc:embedded-database) -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+		<property name="url" value="jdbc:hsqldb:mem:testMemDB1" />
+		<property name="username" value="sa" />
+		<property name="password" value="" />
+		<property name="initialSize" value="5" />
+		<property name="maxActive" value="10" />
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxOpenPreparedStatements" value="10" />
+	</bean>
+
+	<jdbc:initialize-database data-source="dataSource">
+        <jdbc:script location="classpath:config/test-memory-schema-w-constraints.sql" />	
+    	<jdbc:script location="classpath:config/test-memory-data-w-constraints.sql" />
+	</jdbc:initialize-database>
+
+	<!-- As of Spring 3, this is the simplified version of config above 
+	<jdbc:embedded-database id="dataSourceStyle2" type="HSQL">
+        <jdbc:script location="classpath:config/test-memory-schema-w-constraints.sql" />	
+    	<jdbc:script location="classpath:config/test-memory-data-w-constraints.sql" />
+	</jdbc:embedded-database>
+    -->
+    
+	<bean id="sample1SessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<!-- <property name="configLocation" value="classpath:hibernate.cfg.xml" /> -->
+			
+		<property name="dataSource" ref="dataSource" />
+<!-- 		
+		<property name="annotatedClasses">
+		  <list>
+		    <value>blah.blah.MyObject1</value>
+		    <value>blah.blah.MyObject2</value>
+		  </list>
+		</property>		
+	 -->	
+		<property name="mappingResources" ref="mappingResources">
+<!-- 			
+			<list>
+				<value>BiDirectional_OneToMany.hbm.xml</value>
+				<value>BiDirectional_OneToOne.hbm.xml</value>
+				<value>UniDirectional_ManyToOne.hbm.xml</value>				
+			</list> 
+-->
+		</property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+                <!-- REMOVE THIS to fix createQuery is not valid without active transaction 
+                <prop key="hibernate.current_session_context_class">thread</prop> -->
+                <!-- <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext</prop>  -->
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="format_sql">true</prop>
+				<prop key="use_sql_comments">true</prop>
+            </props>
+        </property>	
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sample1SessionFactory" />
+	</bean>
+
+</beans>    

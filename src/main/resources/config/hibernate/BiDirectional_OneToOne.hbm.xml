@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping auto-import="false">
+
+    <class name="pel.samples.app.model.UserAccount" table="USERS" schema="PUBLIC" catalog="PUBLIC">
+        <id name="id" type="java.lang.Long" column="USER_ID">
+            <generator class="identity" />
+        </id>
+
+		<one-to-one name="customer" class="pel.samples.app.model.Customer" fetch="select" cascade="save-update">
+		</one-to-one>
+			        
+        <property name="username" type="string" column="USER_LOGINNAME" length="30" />
+        <property name="password" type="string" column="USER_PASSWORD" length="30" />
+        <property name="email" type="string" column="USER_EMAIL" length="70" />      
+    </class>
+
+
+    <class name="pel.samples.app.model.Customer" table="CUSTOMER" schema="PUBLIC" catalog="PUBLIC">
+        <id name="id" type="java.lang.Long" column="USER_ID">
+            <generator class="foreign" >
+            	<param name="property">userAccount</param>
+            </generator>
+        </id>
+
+		<one-to-one name="userAccount" class="pel.samples.app.model.UserAccount" constrained="true" >
+		</one-to-one>
+        
+        <property name="firstname" type="string" column="CUSTOMER_FIRSTNAME" length="50" />
+        <property name="lastname" type="string" column="CUSTOMER_LASTNAME" length="50" />
+
+    </class>
+                          
+</hibernate-mapping>

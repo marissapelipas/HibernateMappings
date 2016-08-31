@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping auto-import="false">
+
+    <class name="pel.samples.app.model.Customer" table="CUSTOMER" schema="PUBLIC" catalog="PUBLIC">
+        <id name="id" type="java.lang.Long" column="USER_ID">
+            <generator class="identity" />
+        </id>
+        
+        <property name="firstname" type="string" column="CUSTOMER_FIRSTNAME" length="50" />
+        <property name="lastname" type="string" column="CUSTOMER_LASTNAME" length="50" />
+
+        <set name="addresses" table="ADDRESS" inverse="true" lazy="true" fetch="select" cascade="save-update, persist">
+            <key>
+                <column name="USER_ID" not-null="true" />
+            </key>
+            <one-to-many class="pel.samples.app.model.CustomerAddress" />
+        </set>
+    </class>
+           
+    <class name="pel.samples.app.model.CustomerAddress" table="ADDRESS" schema="PUBLIC" catalog="PUBLIC" >
+        <id name="id" type="java.lang.Long" column="ADDRESS_ID">
+            <generator class="identity" />
+        </id>
+		
+        <many-to-one name="customer" class="pel.samples.app.model.Customer" unique="true" >
+            <column name="USER_ID" not-null="true" />
+        </many-to-one>
+        
+        <property name="address1" type="string" column="ADDRESS_ADDRESS1" />
+        <property name="address2" type="string" column="ADDRESS_ADDRESS2" />
+        <property name="city" type="string" column="ADDRESS_CITY" />
+        <property name="state" type="string" column="ADDRESS_STATE" />
+        <property name="zip" type="string" column="ADDRESS_ZIP" />        
+    </class>
+               
+</hibernate-mapping>
